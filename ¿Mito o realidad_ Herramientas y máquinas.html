@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>¿Mito o realidad? Herramientas y máquinas</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#fafaf7;--fg:#1b1b1b;--mut:#6b6b66;--ok:#1e9e55;--no:#d93636;--line:#e2e2dc;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141414;--fg:#f2f2ee;--mut:#9a9a94;--line:#2c2c2a}}
+:root[data-theme="dark"]{--bg:#141414;--fg:#f2f2ee;--mut:#9a9a94;--line:#2c2c2a}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:Georgia,"Times New Roman",serif}
+#app{height:100%;max-width:760px;margin:0 auto;padding:20px;display:flex;flex-direction:column}
+.bar{display:flex;justify-content:space-between;font:600 15px system-ui,sans-serif;color:var(--mut)}
+.prog{height:4px;background:var(--line);margin:10px 0 0}
+.prog i{display:block;height:100%;width:0;background:var(--fg);transition:width .2s}
+.stage{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px 0;overflow-y:auto}
+.q{font-size:clamp(24px,5.6vw,40px);line-height:1.3;margin:0;font-weight:700}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:34%;min-height:150px}
+button{border:0;border-radius:14px;color:#fff;font:800 clamp(24px,6vw,40px) system-ui,sans-serif;cursor:pointer;transition:transform .08s}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:4px solid var(--fg);outline-offset:3px}
+#v{background:var(--ok)}#f{background:var(--no)}
+body.ok{background:color-mix(in srgb,var(--ok) 22%,var(--bg))}
+body.no{background:color-mix(in srgb,var(--no) 22%,var(--bg))}
+.end{text-align:left;width:100%}
+.score{font:800 64px system-ui,sans-serif;margin:0}
+.miss{border-top:1px solid var(--line);padding:12px 0;font-size:18px;line-height:1.4}
+.miss b{font-family:system-ui,sans-serif;color:var(--no)}
+.again{background:var(--fg);color:var(--bg);padding:16px 28px;font-size:20px;margin:12px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const D=[
+["La piedra tallada es la herramienta más antigua que se conoce: tiene unos 2.6 millones de años.",true,"Servía para cortar y raspar alimentos y pieles."],
+["Tener una herramienta basta: no hace falta aprender cómo usarla.",false,"Cada herramienta exige un gesto técnico: postura, presión y ritmo que se aprenden y se transmiten."],
+["Cada sociedad crea herramientas que reflejan sus necesidades y su creatividad.",true,"Las herramientas son también un reflejo cultural."],
+["Las máquinas eliminan por completo el trabajo humano.",false,"Delegar tareas potencia el trabajo humano: liberamos tiempo para decidir, crear y comunicar."],
+["El gesto técnico es el movimiento del cuerpo (postura, presión, ritmo) con que se usa una herramienta.",true,"Es como un idioma del cuerpo y las manos."],
+["Con la tecnología digital desaparecieron los gestos técnicos.",false,"Cambiaron: hacer clic, teclear y navegar con el ratón son gestos técnicos nuevos."],
+["Las hojas de cálculo automatizan cálculos y análisis de datos.",true,"Lo que antes tomaba horas hoy se resuelve en segundos."],
+["La ofimática solo sirve para escribir documentos.",false,"También organiza datos, presenta ideas y almacena y recupera archivos."],
+["El fuego permitió cocinar, calentar y transformar materiales.",true,"Fue un salto enorme en la capacidad humana de modificar el entorno."],
+["Las herramientas digitales son poderosas por sí mismas, sin importar quién las use.",false,"Son tan poderosas como quien sabe usarlas."],
+["Al delegar tareas repetitivas en máquinas, las personas pueden dedicarse a actividades más creativas.",true,"Esa es una de las grandes ventajas de la delegación de funciones."],
+["La rueda solo sirvió para decorar; no cambió el transporte ni la producción.",false,"Revolucionó el transporte y la producción, multiplicando la fuerza humana."]
+];
+const app=document.getElementById('app');
+let Q,i,pts,fails;
+function shuffle(a){a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+function start(){Q=shuffle(D);i=0;pts=0;fails=[];document.body.className='';show()}
+function show(){
+ if(i>=Q.length)return end();
+ app.innerHTML=`<div class="bar"><span>${i+1} / ${Q.length}</span><span>Puntos: ${pts}</span></div>
+ <div class="prog"><i style="width:${i/Q.length*100}%"></i></div>
+ <div class="stage"><p class="q">${Q[i][0]}</p></div>
+ <div class="btns"><button id="v">Verdadero</button><button id="f">Falso</button></div>`;
+ document.getElementById('v').onclick=()=>pick(true);
+ document.getElementById('f').onclick=()=>pick(false);
+}
+function pick(a){
+ const q=Q[i];
+ if(a===q[1])pts++;else fails.push(q);
+ document.body.className=a===q[1]?'ok':'no';
+ setTimeout(()=>document.body.className='',160);
+ i++;show();
+}
+function end(){
+ document.body.className='';
+ app.innerHTML=`<div class="stage"><div class="end">
+ <p class="score">${pts} / ${Q.length}</p>
+ <p style="font-size:20px;margin:4px 0 8px">${fails.length?'Repasa estos mitos:':'Sin mitos pendientes.'}</p>
+ ${fails.map(q=>`<div class="miss"><b>${q[1]?'Era verdadero':'Era falso'}:</b> ${q[0]}<br>${q[2]}</div>`).join('')}
+ <button class="again" id="r">Jugar de nuevo</button></div></div>`;
+ document.getElementById('r').onclick=start;
+}
+document.addEventListener('keydown',e=>{
+ if(!document.getElementById('v'))return;
+ const k=e.key.toLowerCase();
+ if(k==='v'||k==='arrowleft')pick(true);
+ if(k==='f'||k==='arrowright')pick(false);
+});
+start();
+</script>
+</body>
+</html>
